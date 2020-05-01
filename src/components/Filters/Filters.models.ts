@@ -50,3 +50,8 @@ export enum GradeSystem {
     DANGER='danger',
     HUECO='hueco'
 }
+
+export enum ResourceType {
+    AREA='areas',
+    ROUTE='route'
+}
