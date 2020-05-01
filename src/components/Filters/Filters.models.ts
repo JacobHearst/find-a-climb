@@ -3,20 +3,50 @@ export interface Grade {
     sort_index: number;
 }
 
-export interface FiltersState {
-    grades: Grade[];
-    filterUpdates: unknown;
+export interface GradesResponse {
+    yds: Grade[];
+    aid: Grade[];
+    mixed: Grade[];
+    ice: Grade[];
+    hueco: Grade[];
+    danger: Grade[];
+    snow: Grade[];
+}
+
+export interface RouteFilter {
+    types?: string;
+    length?: string;
+    pitches?: string;
+    height?: string;
+    rating?: string;
+    elevation?: string;
+    grades?: string;
 }
 
 export enum RangeFilterType {
-    GRADE = 'Grade'
+    GRADE='GRADE',
+    RATING='RATING',
+    ELEVATION='ELEVATION',
+    HEIGHT='HEIGHT',
+    LENGTH='LENGTH',
+    PITCHES='PITCHES',
 }
 
 export enum ClimbType {
-    SPORT='Sport',
-    TRAD='Trad',
+    ROCK='Rock',
     AID='Aid',
     MIXED='Mixed',
     ICE='Ice',
+    SNOW='Snow',
     BOULDER='Boulder'
+}
+
+export enum GradeSystem {
+    YDS='yds',
+    AID='aid',
+    ICE='ice',
+    MIXED='mixed',
+    SNOW='snow',
+    DANGER='danger',
+    HUECO='hueco'
 }

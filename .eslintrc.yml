@@ -31,3 +31,7 @@ rules:
   semi:
     - error
     - never
+  explicit-function-return-type:
+    - 'off'
+  no-case-declarations:
+    - 'off'

@@ -13,27 +13,33 @@ export interface RangeFilterProps {
 }
 
 export interface RangeFilterState {
-    selectedValues: number[];
+    values: number[];
     formLabel: string;
+    min: number;
+    max: number;
 }
 
 class RangeFilter extends React.Component<RangeFilterProps, RangeFilterState> {
     constructor(props: RangeFilterProps) {
         super(props)
         this.state = {
-            selectedValues: [],
-            formLabel: ''
+            values: [],
+            formLabel: '',
+            min: 0,
+            max: 100
         }
     }
 
-    static getDerivedStateFromProps(props: RangeFilterProps, state: RangeFilterState): RangeFilterState {
-        if (state.formLabel === '') {
-            if (props.max > 0) {
-                return {
-                    ...state,
-                    formLabel: `${props.formPrefix}: ${props.labels[props.min]} - ${props.labels[props.max]}`
-                }
+    static getDerivedStateFromProps({ formPrefix, min, max, labels}: RangeFilterProps, state: RangeFilterState): RangeFilterState | null {
+        if (max > 0 && state.max !== max) {
+            const newState: RangeFilterState = {
+                formLabel: `${formPrefix}: ${labels[min]} / ${labels[max]}`,
+                values: [min, max],
+                min,
+                max
             }
+
+            return newState
         }
 
         return null
@@ -51,22 +57,22 @@ class RangeFilter extends React.Component<RangeFilterProps, RangeFilterState> {
                 <FormLabel>{this.state.formLabel}</FormLabel>
                 <Range
                     allowCross={false}
-                    defaultValue={[this.props.min, this.props.max]}
-                    min={this.props.min}
-                    max={this.props.max}
+                    value={this.state.values}
+                    min={this.state.min}
+                    max={this.state.max}
                     onChange={this.updateValues} />
             </InputGroup>
         )
     }
 
-    updateValues = (selectedValues: number[]): void => {
+    updateValues = (values: number[]): void => {
         this.setState({
             ...this.state,
-            selectedValues,
-            formLabel: `${this.props.formPrefix}: ${this.props.labels[selectedValues[0]]} - ${this.props.labels[selectedValues[1]]}`
+            values,
+            formLabel: `${this.props.formPrefix}: ${this.props.labels[values[0]]} / ${this.props.labels[values[1]]}`
         })
 
-        this.props.onChange(this.props.filterType, selectedValues)
+        this.props.onChange(this.props.filterType, values)
     }
 }
 
