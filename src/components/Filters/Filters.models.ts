@@ -14,6 +14,7 @@ export interface GradesResponse {
 }
 
 export type RouteFiltersResponse = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key in RangeFilterType]: any[]
 }
 
@@ -61,5 +62,5 @@ export enum GradeSystem {
 
 export enum ResourceType {
     AREA='areas',
-    ROUTE='route'
+    ROUTE='routes'
 }
