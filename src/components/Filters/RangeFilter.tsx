@@ -5,7 +5,7 @@ import { RangeFilterType } from './Filters.models'
 
 export interface RangeFilterProps {
     labels: string[];
-    formPrefix: string;
+    units: string;
     filterType: RangeFilterType;
     min: number;
     max: number;
@@ -30,10 +30,10 @@ class RangeFilter extends React.Component<RangeFilterProps, RangeFilterState> {
         }
     }
 
-    static getDerivedStateFromProps({ formPrefix, min, max, labels}: RangeFilterProps, state: RangeFilterState): RangeFilterState | null {
+    static getDerivedStateFromProps({ filterType, min, max, labels, units}: RangeFilterProps, state: RangeFilterState): RangeFilterState | null {
         if (max > 0 && state.max !== max) {
             const newState: RangeFilterState = {
-                formLabel: `${formPrefix}: ${labels[min]} / ${labels[max]}`,
+                formLabel: RangeFilter.generateLabel(filterType, min, max, labels, units),
                 values: [min, max],
                 min,
                 max
@@ -67,12 +67,16 @@ class RangeFilter extends React.Component<RangeFilterProps, RangeFilterState> {
 
     updateValues = (values: number[]): void => {
         this.setState({
-            ...this.state,
             values,
-            formLabel: `${this.props.formPrefix}: ${this.props.labels[values[0]]} / ${this.props.labels[values[1]]}`
+            formLabel: RangeFilter.generateLabel(this.props.filterType, values[0], values[1], this.props.labels, this.props.units)
         })
 
         this.props.onChange(this.props.filterType, values)
+    }
+
+    static generateLabel(filterType: RangeFilterType, lowerBound: number, upperBound: number, labels: string[], units: string): string {
+        const prefix = filterType[0].toUpperCase() + filterType.slice(1)
+        return `${prefix}: ${labels[lowerBound]} / ${labels[upperBound]} ${units}`
     }
 }
 

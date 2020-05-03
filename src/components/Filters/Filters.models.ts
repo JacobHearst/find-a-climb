@@ -13,6 +13,10 @@ export interface GradesResponse {
     snow: Grade[];
 }
 
+export type RouteFiltersResponse = {
+    [key in RangeFilterType]: any[]
+}
+
 export interface RouteFilter {
     types?: string;
     length?: string;
@@ -23,13 +27,17 @@ export interface RouteFilter {
     grades?: string;
 }
 
+export interface RouteFilterData {
+    grades: GradesResponse;
+    filters: RouteFiltersResponse;
+}
+
 export enum RangeFilterType {
-    GRADE='GRADE',
-    RATING='RATING',
-    ELEVATION='ELEVATION',
-    HEIGHT='HEIGHT',
-    LENGTH='LENGTH',
-    PITCHES='PITCHES',
+    GRADE='grade',
+    RATING='rating',
+    HEIGHT='height',
+    LENGTH='length',
+    PITCHES='pitches',
 }
 
 export enum ClimbType {

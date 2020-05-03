@@ -23,7 +23,7 @@ class App extends React.Component<{}> {
 
     search(resourceType: ResourceType, filters: RouteFilter): void {
         console.log(`Resource type: ${resourceType}`)
-        console.log(`Filters: ${filters}`)
+        console.log('Filters: ', filters)
     }
 }
 
