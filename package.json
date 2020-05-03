@@ -1,5 +1,5 @@
 {
-  "name": "find-a-climb-fe",
+  "name": "find-a-climb",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -10,7 +10,11 @@
     "@types/node": "^12.12.37",
     "@types/react": "^16.9.34",
     "@types/react-dom": "^16.9.7",
+    "axios": "^0.19.2",
+    "bootstrap": "^4.4.1",
+    "rc-slider": "^9.2.4",
     "react": "^16.13.1",
+    "react-bootstrap": "^1.0.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
     "typescript": "^3.7.5"
@@ -37,6 +41,8 @@
     ]
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.150",
+    "@types/rc-slider": "^8.6.5",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
     "@typescript-eslint/parser": "^2.30.0",
     "eslint": "^6.8.0",
