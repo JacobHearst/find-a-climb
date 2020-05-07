@@ -1,15 +1,15 @@
 import React from 'react'
 import { InputGroup, FormLabel } from 'react-bootstrap'
 import { Range } from 'rc-slider'
-import { RangeFilterType } from './Filters.models'
+import { RouteFilterType } from './Filters.models'
 
 export interface RangeFilterProps {
     labels: string[];
     units: string;
-    filterType: RangeFilterType;
+    filterType: RouteFilterType;
     min: number;
     max: number;
-    onChange: (filterName: RangeFilterType, value: number[]) => void;
+    onChange: (filterName: RouteFilterType, values: string[]) => void;
 }
 
 export interface RangeFilterState {
@@ -22,36 +22,16 @@ export interface RangeFilterState {
 class RangeFilter extends React.Component<RangeFilterProps, RangeFilterState> {
     constructor(props: RangeFilterProps) {
         super(props)
+        const { filterType, min, max, labels, units } = props
         this.state = {
-            values: [],
-            formLabel: '',
-            min: 0,
-            max: 100
+            formLabel: this.generateLabel(filterType, min, max, labels, units),
+            values: [min, max],
+            min,
+            max
         }
-    }
-
-    static getDerivedStateFromProps({ filterType, min, max, labels, units}: RangeFilterProps, state: RangeFilterState): RangeFilterState | null {
-        if (max > 0 && state.max !== max) {
-            const newState: RangeFilterState = {
-                formLabel: RangeFilter.generateLabel(filterType, min, max, labels, units),
-                values: [min, max],
-                min,
-                max
-            }
-
-            return newState
-        }
-
-        return null
     }
 
     render(): JSX.Element {
-        if (this.props.max < 0) {
-            return (
-                <p>Loading...</p>
-            )
-        }
-
         return (
             <InputGroup>
                 <FormLabel>{this.state.formLabel}</FormLabel>
@@ -65,16 +45,20 @@ class RangeFilter extends React.Component<RangeFilterProps, RangeFilterState> {
         )
     }
 
-    updateValues = (values: number[]): void => {
+    updateValues = (labelIndices: number[]): void => {
         this.setState({
-            values,
-            formLabel: RangeFilter.generateLabel(this.props.filterType, values[0], values[1], this.props.labels, this.props.units)
+            values: labelIndices,
+            formLabel: this.generateLabel(this.props.filterType, labelIndices[0], labelIndices[1], this.props.labels, this.props.units)
         })
+
+        // Convert from the index of the label to the value itself
+        const values: string[] = [this.props.labels[labelIndices[0]], this.props.labels[labelIndices[1]]]
 
         this.props.onChange(this.props.filterType, values)
     }
 
-    static generateLabel(filterType: RangeFilterType, lowerBound: number, upperBound: number, labels: string[], units: string): string {
+    generateLabel(filterType: RouteFilterType, lowerBound: number, upperBound: number, labels: string[], units: string): string {
+        // Capitalize first letter, will be removed when translation is added
         const prefix = filterType[0].toUpperCase() + filterType.slice(1)
         return `${prefix}: ${labels[lowerBound]} / ${labels[upperBound]} ${units}`
     }

@@ -6,12 +6,20 @@ import Axios from 'axios'
 import { Route } from './App.models'
 
 import './App.css'
+import RouteResults from './components/Results/RouteResults'
 
 export interface AppState {
     routeResults?: Route[];
 }
 
-class App extends React.Component<{}> {
+class App extends React.Component<{}, AppState> {
+    constructor(props: {}) {
+        super(props)
+        this.state = {}
+
+        this.search = this.search.bind(this)
+    }
+
     render(): JSX.Element {
         return (
             <Container fluid>
@@ -21,6 +29,7 @@ class App extends React.Component<{}> {
                         <Filters onFilterUpdate={this.search} />
                     </Col>
                     <Col md={10} id="results-col">
+                        <RouteResults routes={this.state.routeResults ? this.state.routeResults : []}/>
                     </Col>
                 </Row>
             </Container>

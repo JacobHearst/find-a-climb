@@ -1,6 +1,6 @@
 import React from 'react'
 import { Form, FormGroup, FormLabel, FormControl } from 'react-bootstrap'
-import { ClimbType, RangeFilterType, GradesResponse, RouteFilter, GradeSystem, RouteFilterData, RouteFiltersResponse } from './Filters.models'
+import { ClimbType, RouteFilterType, GradesResponse, RouteFilter, GradeSystem, RouteFilterData, RouteFiltersResponse } from './Filters.models'
 import RangeFilter from './RangeFilter'
 import _ from 'lodash'
 
@@ -16,59 +16,42 @@ export interface RouteFiltersState {
     filter: RouteFilter;
 }
 
-const initialState: RouteFiltersState = {
-    grades: {} as GradesResponse,
-    filterData: {} as RouteFiltersResponse,
-    filter: {},
-    // FIXME: Configurable default grade system
-    selectedClimbType: ClimbType.ROCK
-}
-
 class RouteFilters extends React.Component<RouteFiltersProps, RouteFiltersState> {
     constructor(props: RouteFiltersProps) {
         super(props)
-        this.state = initialState
-    }
 
-    static getDerivedStateFromProps({ filterData }: RouteFiltersProps, state: RouteFiltersState): RouteFiltersState | null {
-        if (!_.isEmpty(filterData)) {
-            const { grades } = filterData
-            const gradeSystem = RouteFilters.toGradeSystem(state.selectedClimbType)
+        const defaultClimbType = ClimbType.ROCK
+        const { filterData: { grades, filters }} = props
+        const gradeSystem = this.toGradeSystem(defaultClimbType)
 
-            const newState: RouteFiltersState = {
-                ...state,
-                grades,
-                filterData: {
-                    ...filterData.filters,
-                    grade: grades[gradeSystem].map((grade) => grade.grade)
-                }
-            }
-
-            return newState
+        this.state = {
+            grades,
+            filterData: {
+                ...filters,
+                grade: grades[gradeSystem].map((grade) => grade.grade)
+            },
+            filter: {},
+            selectedClimbType: defaultClimbType
         }
 
-        return null
+        this.shouldAddToFilter = this.shouldAddToFilter.bind(this)
+    }
+
+    shouldComponentUpdate(_nextProps: RouteFiltersProps, nextState: RouteFiltersState): boolean {
+        const currState = _.omit(this.state, 'filter')
+        const newState = _.omit(nextState, 'filter')
+
+        return !_.isEqual(currState, newState)
+    }
+
+    componentDidMount(): void {
+        this.updateFilter(RouteFilterType.TYPES, [this.state.selectedClimbType])
     }
 
     /**
      * Render the route search filters
      */
     render(): JSX.Element {
-        const filters = !_.isEmpty(this.state.filterData) 
-            ? _.map(this.state.filterData, (filterValues, key) => {
-                return (
-                    <RangeFilter
-                        key={key}
-                        filterType={key as RangeFilterType}
-                        min={0}
-                        max={filterValues.length - 1}
-                        labels={filterValues}
-                        units={this.getFilterUnits(key as RangeFilterType)}
-                        onChange={_.debounce(this.updateRangeFilter, 500)}/>
-                )
-            })
-            : (<p>Loading filters...</p>)
-
         return (
             <Form>
                 <FormGroup>
@@ -77,7 +60,7 @@ class RouteFilters extends React.Component<RouteFiltersProps, RouteFiltersState>
                         custom
                         as="select"
                         value={this.state.selectedClimbType}
-                        onChange={({ target: { value } }): void => this.updateGradeSystem(value)}>
+                        onChange={({ target: { value } }): void => this.updateFilter(RouteFilterType.TYPES, [value])}>
                         <option value={ClimbType.ROCK}>{ClimbType.ROCK}</option>
                         <option value={ClimbType.BOULDER}>{ClimbType.BOULDER}</option>
                         <option value={ClimbType.AID}>{ClimbType.AID}</option>
@@ -86,7 +69,16 @@ class RouteFilters extends React.Component<RouteFiltersProps, RouteFiltersState>
                         <option value={ClimbType.SNOW}>{ClimbType.SNOW}</option>
                     </FormControl>
                 </FormGroup>
-                {filters}
+                {_.map(this.state.filterData, (filterValues, key) => (
+                    <RangeFilter
+                        key={key}
+                        filterType={key as RouteFilterType}
+                        min={0}
+                        max={filterValues.length - 1}
+                        labels={filterValues as string[]}
+                        units={this.getFilterUnits(key as RouteFilterType)}
+                        onChange={_.debounce(this.updateFilter, 500)} />
+                ))}
             </Form>
         )
     }
@@ -97,65 +89,60 @@ class RouteFilters extends React.Component<RouteFiltersProps, RouteFiltersState>
      * @param filterType The type of range filter having its value updated
      * @param values The updated range value
      */
-    updateRangeFilter = (filterType: RangeFilterType, values: number[]): void => {
-        const filter: RouteFilter = {}
+    updateFilter = (filterType: RouteFilterType, values: string[]): void => {
+        const newFilterValues: RouteFilter = {}
         switch (filterType) {
-        case RangeFilterType.GRADE:
-            const gradeSystem = RouteFilters.toGradeSystem(this.state.selectedClimbType)
+        case RouteFilterType.GRADE: {
+            const gradeSystem = this.toGradeSystem(this.state.selectedClimbType)
             const grades = this.state.grades[gradeSystem]
 
-            const gradeMin: number = grades[values[0]].sort_index
-            const gradeMax: number = grades[values[1]].sort_index
+            const gradeMin = _.find(grades, { grade: values[0] })?.sort_index
+            const gradeMax = _.find(grades, { grade: values[1] })?.sort_index
 
-            filter.grades = [gradeSystem, gradeMin, gradeMax].join(',')
+            newFilterValues.grade = [gradeSystem, gradeMin, gradeMax].join(',')
             break
-        case RangeFilterType.RATING:
-            filter.rating = values.join(',')
+        }
+        case RouteFilterType.RATING:
+            newFilterValues.rating = values.join(',')
             break
-        case RangeFilterType.LENGTH:
-            const lengthMin = this.state.filterData.length[values[0]]
-            const lengthMax = this.state.filterData.length[values[1]]
-            filter.length = [lengthMin, lengthMax].join(',')
+        case RouteFilterType.LENGTH:
+            newFilterValues.length = values.join(',')
             break
-        case RangeFilterType.PITCHES:
-            filter.pitches = values.join(',')
+        case RouteFilterType.PITCHES:
+            newFilterValues.pitches = values.join(',')
             break
-        case RangeFilterType.HEIGHT:
-            filter.height = values.join(',')
+        case RouteFilterType.HEIGHT:
+            newFilterValues.height = values.join(',')
             break
+        case RouteFilterType.TYPES: {
+            const selectedClimbType = values[0] as ClimbType
+            
+            // Update selected grade system
+            const newGradeSystem = this.state.grades[this.toGradeSystem(selectedClimbType)].map((grade) => grade.grade)
+            this.setState({ filterData: { ...this.state.filterData, grade: newGradeSystem }, selectedClimbType })
+
+            const climbTypes = selectedClimbType === ClimbType.ROCK
+                ? ['Trad', 'Sport']
+                : [selectedClimbType]
+
+            newFilterValues.types = climbTypes.join(',')
+            break
+        }
         default:
             break
         }
 
-        Object.assign(filter, this.state.filter)
+        const filter = _.pickBy(Object.assign({}, this.state.filter, newFilterValues), this.shouldAddToFilter)
         this.setState({filter})
         this.props.onFilterUpdate(filter)
     }
 
     /**
-     * Update the grade system being used for the grade selector
-     * @param selectedValue Newly selected climbing type
-     */
-    updateGradeSystem(selectedValue?: string): void {
-        const selectedClimbType: ClimbType | undefined = selectedValue ? selectedValue as ClimbType : this.state.selectedClimbType
-
-        if (!this.state.grades || !selectedClimbType) {
-            console.warn('Caught empty value')
-            console.log(`Grades: ${this.state.grades}`)
-            console.log(`Climb Type: ${selectedClimbType}`)
-            return
-        }
-
-        const grades: string[] = this.state.grades[RouteFilters.toGradeSystem(selectedClimbType)].map((grade) => grade.grade)
-
-        this.setState({ filterData: { ...this.state.filterData, grade: grades}, selectedClimbType })
-    }
-
-    /**
      * Get the grade system for the specified type of climbing
+     * 
      * @param climbType Type of climbing to determine grade system for
      */
-    static toGradeSystem(climbType: ClimbType): GradeSystem {
+    toGradeSystem(climbType: ClimbType): GradeSystem {
         return {
             [ClimbType.ROCK]: GradeSystem.YDS,
             [ClimbType.AID]: GradeSystem.AID,
@@ -166,14 +153,58 @@ class RouteFilters extends React.Component<RouteFiltersProps, RouteFiltersState>
         }[climbType]
     }
 
-    getFilterUnits(filterType: RangeFilterType): string {
-        if (filterType === RangeFilterType.HEIGHT) {
+    /**
+     * Get the units for a given filter type. This is a
+     * pretty hacky solution right now, but since I'm not
+     * supporting translation yet I can live with it
+     * 
+     * @param filterType type of filter to get units for
+     */
+    getFilterUnits(filterType: RouteFilterType): string {
+        if (filterType === RouteFilterType.HEIGHT) {
             return 'ft'
-        } else if (filterType === RangeFilterType.RATING) {
+        } else if (filterType === RouteFilterType.RATING) {
             return 'stars'
         }
         
         return ''
+    }
+
+    /**
+     * Determine if a value for a given RouteFilterType should be added
+     * to the filter. This is determined by comparing the selected values
+     * to the min and max possible values of the filter with one exception.
+     * The Types filter always returns true because we always want to filter
+     * by the type
+     *
+     * @param value value to be added
+     * @param key key of value to check
+     */
+    shouldAddToFilter(value: string | undefined, key: string): boolean {
+        if ((key as RouteFilterType) === RouteFilterType.TYPES) {
+            return true
+        } 
+
+        const currFilterData = this.state.filterData[key as RouteFilterType]
+        if (!currFilterData || !value) {
+            return false
+        }
+
+        let filterMinMax = [currFilterData[0].toString(), currFilterData.slice(-1)[0].toString()]
+        if ((key as RouteFilterType) === RouteFilterType.GRADE) {
+            // Grades are filtered by their sort index, not their grade value. 
+            const gradeSystem = this.toGradeSystem(this.state.selectedClimbType)
+
+            const min = _.find(this.state.grades[gradeSystem], { grade: currFilterData[0] })?.sort_index.toString()
+            const max = _.find(this.state.grades[gradeSystem], { grade: currFilterData.slice(-1)[0] })?.sort_index.toString()
+            filterMinMax = [this.toGradeSystem(this.state.selectedClimbType), min ? min : '', max ? max : '']
+        }
+
+        const values = value.split(',')
+
+        // Filter by min/max
+        const result = !_.isEqual(values, filterMinMax)
+        return result
     }
 }
 

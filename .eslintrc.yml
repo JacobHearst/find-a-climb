@@ -33,5 +33,6 @@ rules:
     - never
   explicit-function-return-type:
     - 'off'
-  no-case-declarations:
-    - 'off'
+  no-unused-vars: 
+    - error
+    - varsIgnorePattern: "^_.+"

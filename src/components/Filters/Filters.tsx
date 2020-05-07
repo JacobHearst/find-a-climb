@@ -4,6 +4,7 @@ import RouteFilters from './RouteFilters'
 import { ListGroup, Tab } from 'react-bootstrap'
 import AreaFilters from './AreaFilters'
 import axios, { AxiosResponse } from 'axios'
+import _ from 'lodash'
 
 import 'rc-slider/assets/index.css'
 import './filters.css'
@@ -47,18 +48,26 @@ class Filters extends React.Component<FiltersProps, FiltersState> {
                         </ListGroup.Item>
                     </ListGroup>
                 </Tab.Container>
-                <div className="mt-4">
-                    {
-                        this.state.selectedSearchType === ResourceType.ROUTE
-                            ? (<RouteFilters onFilterUpdate={this.onRouteChange} filterData={this.state.routeFilterData} />)
-                            : (<AreaFilters/>)
-                    }
-                </div>
+                {
+                    _.isEmpty(this.state.routeFilterData)
+                        ? (<p>Loading filters...</p>)
+                        : (
+                            <div className="mt-4">
+                                {
+                                    this.state.selectedSearchType === ResourceType.ROUTE
+                                        ? (<RouteFilters onFilterUpdate={this.onRouteChange} filterData={this.state.routeFilterData} />)
+                                        : (<AreaFilters />)
+                                }
+                            </div>
+                        )
+                }
             </div>
         )
     }
 
-    onRouteChange = (filter: RouteFilter): void => this.props.onFilterUpdate(ResourceType.ROUTE, filter)
+    onRouteChange = (filter: RouteFilter): void => {
+        this.props.onFilterUpdate(ResourceType.ROUTE, filter)
+    }
 
     // TODO: onAreaChange
 

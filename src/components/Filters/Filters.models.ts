@@ -14,8 +14,7 @@ export interface GradesResponse {
 }
 
 export type RouteFiltersResponse = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key in RangeFilterType]: any[]
+    [key in RouteFilterType]: string[]
 }
 
 export interface RouteFilter {
@@ -24,8 +23,7 @@ export interface RouteFilter {
     pitches?: string;
     height?: string;
     rating?: string;
-    elevation?: string;
-    grades?: string;
+    grade?: string;
 }
 
 export interface RouteFilterData {
@@ -33,12 +31,13 @@ export interface RouteFilterData {
     filters: RouteFiltersResponse;
 }
 
-export enum RangeFilterType {
+export enum RouteFilterType {
     GRADE='grade',
     RATING='rating',
     HEIGHT='height',
     LENGTH='length',
     PITCHES='pitches',
+    TYPES='types'
 }
 
 export enum ClimbType {
