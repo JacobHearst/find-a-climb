@@ -2,6 +2,7 @@ import React from 'react'
 import { InputGroup, FormLabel } from 'react-bootstrap'
 import { Range } from 'rc-slider'
 import { RouteFilterType } from './Filters.models'
+import _ from 'lodash'
 
 export interface RangeFilterProps {
     labels: string[];
@@ -28,6 +29,18 @@ class RangeFilter extends React.Component<RangeFilterProps, RangeFilterState> {
             values: [min, max],
             min,
             max
+        }
+    }
+
+    componentDidUpdate(prevProps: RangeFilterProps): void {
+        if (!_.isEqual(this.props, prevProps)) {
+            const { filterType, min, max, labels, units } = this.props
+            this.setState({
+                formLabel: this.generateLabel(filterType, min, max, labels, units),
+                values: [min, max],
+                min,
+                max
+            })
         }
     }
 
