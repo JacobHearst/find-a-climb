@@ -43,7 +43,7 @@ class Filters extends React.Component<FiltersProps, FiltersState> {
                         <ListGroup.Item action href="#routes" onClick={(): void => this.setSelectedSearch(ResourceType.ROUTE)}>
                             Route
                         </ListGroup.Item>
-                        <ListGroup.Item action href="#areas" onClick={(): void => this.setSelectedSearch(ResourceType.AREA)}>
+                        <ListGroup.Item action disabled href="#areas" onClick={(): void => this.setSelectedSearch(ResourceType.AREA)}>
                             Area
                         </ListGroup.Item>
                     </ListGroup>
