@@ -57,16 +57,14 @@ class RouteFilters extends React.Component<RouteFiltersProps, RouteFiltersState>
                 <FormGroup>
                     <FormLabel>Select climb type:</FormLabel>
                     <FormControl
-                        custom
-                        as="select"
+                        as='select'
                         value={this.state.selectedClimbType}
                         onChange={({ target: { value } }): void => this.updateFilter(RouteFilterType.TYPES, [value])}>
-                        <option value={ClimbType.ROCK}>{ClimbType.ROCK}</option>
-                        <option value={ClimbType.BOULDER}>{ClimbType.BOULDER}</option>
-                        <option value={ClimbType.AID}>{ClimbType.AID}</option>
-                        <option value={ClimbType.ICE}>{ClimbType.ICE}</option>
-                        <option value={ClimbType.MIXED}>{ClimbType.MIXED}</option>
-                        <option value={ClimbType.SNOW}>{ClimbType.SNOW}</option>
+                        {
+                            Object.values(ClimbType).map((climbType) => (
+                                <option key={climbType} value={climbType}>{climbType}</option>
+                            ))
+                        }
                     </FormControl>
                 </FormGroup>
                 {_.map(this.state.filterData, (filterValues, key) => (
