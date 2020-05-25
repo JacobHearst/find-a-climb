@@ -68,6 +68,9 @@ class RouteResults extends React.Component<RouteResultsProps, RouteResultsState>
                     </tbody>
                 </Table>
                 <Pagination className="justify-content-center">
+                    <Pagination.First
+                        disabled={this.state.page === 1}
+                        onClick={(): void => this.page(1)}/>
                     <Pagination.Prev 
                         disabled={this.state.page - 1 === 0}
                         onClick={(): void => this.page(this.state.page - 1)}/>
@@ -75,6 +78,9 @@ class RouteResults extends React.Component<RouteResultsProps, RouteResultsState>
                     <Pagination.Next
                         disabled={this.state.page + 1 > this.props.results.maxPage}
                         onClick={(): void => this.page(this.state.page + 1)}/>
+                    <Pagination.Last
+                        disabled={this.state.page === this.props.results.maxPage}
+                        onClick={(): void => this.page(this.props.results.maxPage)} />
                 </Pagination>
             </div>
         )
@@ -87,30 +93,24 @@ class RouteResults extends React.Component<RouteResultsProps, RouteResultsState>
         const { results: { maxPage } } = this.props
         const paginationItems = []
 
-        if (this.props.results.maxPage >= 10) {
-            // Ensure that at least 10 items are shown at all times
-            const startPage = maxPage - this.state.page < 10
-                ? maxPage - 9
-                : this.state.page
+        // Ensure that at least 10 items are shown whenever max page is >= 10
+        let startPage = maxPage - this.state.page < 10
+            ? maxPage - 9
+            : this.state.page
+        
+        // Generate starting at 1 if there are fewer than 10 pages
+        if (maxPage < 10) {
+            startPage = 1
+        }
 
-            // Create 10 pagination buttons
-            for (let i = startPage; i <= startPage + 9 && i <= maxPage; i++) {
-                paginationItems.push(
-                    <Pagination.Item
-                        active={i === this.state.page}
-                        key={i}
-                        onClick={(): void => this.page(i)}>{i}</Pagination.Item>
-                )
-            }
-        } else {
-            for (let i = 1; i <= maxPage; i++) {
-                paginationItems.push(
-                    <Pagination.Item
-                        active={i === this.state.page}
-                        key={i}
-                        onClick={(): void => this.page(i)}>{i}</Pagination.Item>
-                )
-            }
+        // Create 10 pagination buttons
+        for (let i = startPage; i <= startPage + 9 && i <= maxPage; i++) {
+            paginationItems.push(
+                <Pagination.Item
+                    active={i === this.state.page}
+                    key={i}
+                    onClick={(): void => this.page(i)}>{i}</Pagination.Item>
+            )
         }
 
         return paginationItems
