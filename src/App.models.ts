@@ -14,3 +14,8 @@ export interface Route {
     pitches?: number;
     height?: number;
 }
+
+export interface PagedRouteResults {
+    maxPage: number;
+    routes: Route[];
+}

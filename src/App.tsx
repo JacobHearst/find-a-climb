@@ -3,13 +3,14 @@ import Filters from './components/Filters/Filters'
 import { Container, Row, Col } from 'react-bootstrap'
 import { RouteFilter, ResourceType } from './components/Filters/Filters.models'
 import Axios from 'axios'
-import { Route } from './App.models'
+import { PagedRouteResults } from './App.models'
 
 import './App.css'
 import RouteResults from './components/Results/RouteResults'
 
 export interface AppState {
-    routeResults?: Route[];
+    routeResults?: PagedRouteResults;
+    filters?: {};
 }
 
 class App extends React.Component<{}, AppState> {
@@ -29,7 +30,9 @@ class App extends React.Component<{}, AppState> {
                         <Filters onFilterUpdate={this.search} />
                     </Col>
                     <Col md={10} id="results-col">
-                        <RouteResults routes={this.state.routeResults ? this.state.routeResults : []}/>
+                        <RouteResults
+                            results={this.state.routeResults ? this.state.routeResults : {} as PagedRouteResults}
+                            onPage={this.onPage}/>
                     </Col>
                 </Row>
             </Container>
@@ -37,8 +40,13 @@ class App extends React.Component<{}, AppState> {
     }
 
     search(resourceType: ResourceType, filters: RouteFilter): void {
+        this.setState({ filters })
         Axios.get(`http://localhost:8000/${resourceType}/search`, { params: filters })
             .then(({ data }) => this.setState({routeResults: data}))
+    }
+
+    onPage(pageNum: number): void {
+        console.log(pageNum)
     }
 }
 
