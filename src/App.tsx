@@ -10,11 +10,11 @@ import RouteResults from './components/Results/RouteResults'
 
 export interface AppState {
     routeResults?: PagedRouteResults;
-    filters?: {};
+    filters?: object;
 }
 
-class App extends React.Component<{}, AppState> {
-    constructor(props: {}) {
+class App extends React.Component<object, AppState> {
+    constructor(props: object) {
         super(props)
         this.state = {}
 
